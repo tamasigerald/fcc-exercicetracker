@@ -1,7 +1,11 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const mognoose = require('mongoose');
 require('dotenv').config();
+
+const User = require('./models/User.model');
+const Session = require('./models/Session.model');
 
 app.use(cors());
 app.use(express.static('public'));
@@ -10,6 +14,12 @@ app.use(express.urlencoded({
   extended: true
 }))
 
+mognoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  useCreateIndex: true
+})
 
 
 app.route('/')
@@ -21,27 +31,46 @@ app.route('/')
   }
 });
 
-app.route('/api/exercise/new-user')
-.post((req, res) => {
+app.route('/api/users')
+.post(async (req, res) => {
   const { body } = req;
   const uname = body.username;
   try {
-    res.json({message: uname})
+    const user = new User({
+      username: uname
+    })
+    await user.save((err, doc) => {
+      if (err) return res.json({error: err});
+      res.json(doc);
+    })
   } catch (error) {
     res.json({error: error})
   }
 })
-
-app.route('/api/exercise/add')
-.post((req, res) => {
-  const { userId, description, duration, date } = req.body;
+.get(async (req, res) => {
   try {
-    res.json({user: {
-      userId,
-      description,
-      duration,
-      date
-    }})
+    await User.find((err, result) => {
+      if (err) return res.json({error: err});
+      res.json(result)
+    });
+  } catch (error) {
+    res.json({error: error})
+  }
+});
+
+app.route('/api/users/:id/exercises')
+.post( async (req, res) => {
+  let { userId, description, duration, date } = req.body;
+  if (date === '' || date === undefined) {
+    date = new Date().toISOString().slice(0, 10);
+  }
+  try {
+    const session = new Session({
+      userId: userId,
+      description: description,
+      duration: duration,
+      date: date
+    })
   } catch (error) {
     res.json({error: error})
   }
