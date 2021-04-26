@@ -71,6 +71,10 @@ app.route('/api/users/:id/exercises')
       duration: duration,
       date: date
     })
+    await session.save((err, doc) => {
+      if (err) return res.json({error: err});
+      res.json(doc);
+    })
   } catch (error) {
     res.json({error: error})
   }
