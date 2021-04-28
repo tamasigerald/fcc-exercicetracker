@@ -5,7 +5,11 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true
-    }
+    },
+    logs: [{
+        type: mongoose.Schema.ObjectId,
+        ref: 'Session'
+    }]
 })
 
 const User = mongoose.model('User', userSchema);

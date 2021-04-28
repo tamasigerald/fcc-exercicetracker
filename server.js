@@ -71,22 +71,30 @@ app.route('/api/users/:id/exercises')
       duration: duration,
       date: date
     })
-    await session.save((err, doc) => {
+    session.save(async (err, doc) => {
       if (err) return res.json({error: err});
+      await User.findOneAndUpdate({ _id: userId }, {
+        $push: {logs: session._id}
+      })
       res.json(doc);
     })
   } catch (error) {
     res.json({error: error})
   }
 })
-
-app.route('/api/exercise/log')
 .get((req, res) => {
-  const { userId } = req.query;
+  const { id } = req.params;
   try {
-    res.json({user: {
-      userId
-    }})
+    User.findOne({ _id: id })
+    .populate('logs')
+    .then(user => {
+      const count = user.logs.length;
+      const result = {
+        user,
+        count: count
+      }
+      res.json(result);
+    })
   } catch (error) {
     res.json({error: error})
   }
