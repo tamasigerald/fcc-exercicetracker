@@ -86,22 +86,16 @@ app.route('/api/users/:id/exercises')
   const { id } = req.params;
   try {
     User.findOne({ _id: id })
-    .populate('logs')
+    .populate('logs', '_id description duration date')
     .then(user => {
       const count = user.logs.length;
-      const result = {
-        user,
-        count: count
-      }
+      const result = {...user._doc, count: count};
       res.json(result);
     })
   } catch (error) {
     res.json({error: error})
   }
 })
-
-
-
 
 
 const listener = app.listen(process.env.PORT || 5500, () => {
